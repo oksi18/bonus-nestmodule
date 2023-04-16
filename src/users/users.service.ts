@@ -1,45 +1,39 @@
-import { Body, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/CreateUser.dto';
-import { User } from '../entities/User';
+import {Body, HttpStatus, Injectable, Param} from '@nestjs/common';
 import { UpdateUserParams } from '../utils/types';
+import { PrismaService } from '../database/prisma.service';
+import { User, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[];
-  constructor() {
-    this.users = [];
-  }
-  createUser(@Body() createUserDto: CreateUserDto) {
-    const newUser = {
-      id: this.users.length + 1,
-      ...createUserDto,
+  constructor(private prismaService: PrismaService) {}
+
+  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    const hashPwd = await bcrypt.hash(data.password, 10);
+    const newData = {
+      ...data,
+      password: hashPwd,
     };
-    this.users.push(newUser);
-    return newUser;
-  }
-  getAllUsers() {
-    return this.users;
-  }
-  updateUser(id: number, updateUserDetails: UpdateUserParams) {
-    const user = this.users.find(
-      (user) => user.id.toString() === id.toString(),
-    );
-    if (!user) {
-      return HttpStatus.NOT_FOUND;
-    }
-    return (this.users[this.users.indexOf(user)] = {
-      ...user,
-      ...updateUserDetails,
+    return this.prismaService.user.create({
+      data: newData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+      },
     });
   }
-  deleteUserById(id: number) {
-    const user = this.users.find(
-      (user) => user.id.toString() === id.toString(),
-    );
-    if (!user) {
-      return HttpStatus.NOT_FOUND;
-    }
-    this.users.splice(this.users.indexOf(user), 1);
-    return HttpStatus.OK;
+
+  async getAllUsers() {}
+
+  async updateUser(@Param('id') id: string, @Body() data: any) {
+    const user = await this.prismaService.user.update({
+      where: { id },
+      data,
+    });
+    return user;
   }
+
+  async deleteUserById(id: number) {}
 }

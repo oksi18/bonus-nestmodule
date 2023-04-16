@@ -13,6 +13,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { ApiBody, ApiParam } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
+import { User } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
@@ -20,8 +21,10 @@ export class UsersController {
   @Post('create')
   @UsePipes(new ValidationPipe())
   @ApiBody({ type: CreateUserDto })
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
+  async createDraft(
+    @Body() user: { email: string; name: string; password: string },
+  ): Promise<User> {
+    return this.usersService.createUser(user);
   }
   @Get()
   getAllUsers() {
