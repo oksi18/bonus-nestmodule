@@ -1,7 +1,6 @@
-import {Body, HttpStatus, Injectable, Param} from '@nestjs/common';
-import { UpdateUserParams } from '../utils/types';
+import { Body, Injectable, Param } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { User, Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -25,15 +24,20 @@ export class UsersService {
     });
   }
 
-  async getAllUsers() {}
-
-  async updateUser(@Param('id') id: string, @Body() data: any) {
-    const user = await this.prismaService.user.update({
-      where: { id },
-      data,
-    });
-    return user;
+  async getAllUsers() {
+    return await this.prismaService.user.findMany();
   }
 
-  async deleteUserById(id: number) {}
+  async updateUser(@Param('id') id: string, @Body() data: any) {
+    return await this.prismaService.user.update({
+      where: { id: id },
+      data: data,
+    });
+  }
+
+  async deleteUserById(id: string) {
+    return await this.prismaService.user.delete({
+      where: { id: id },
+    });
+  }
 }

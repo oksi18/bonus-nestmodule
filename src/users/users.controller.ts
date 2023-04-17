@@ -31,13 +31,13 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
   @Put('update/:id')
-  @ApiParam({ name: 'id', type: 'number', description: 'User ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'User ID' })
   @ApiBody({ type: UpdateUserDto })
-  updateUser(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.updateUser(id, updateUserDto);
+  updateUser(@Param('id') id: string, @Body() data: any) {
+    return this.usersService.updateUser(id, data);
   }
   @Delete(':id')
-  deleteUserById(@Param('id') id: number) {
+  deleteUserById(@Param('id') id: string) {
     return this.usersService.deleteUserById(id);
   }
 }
