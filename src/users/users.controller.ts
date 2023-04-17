@@ -6,24 +6,29 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
-import { ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { User } from '@prisma/client';
+import { ProfileService } from './profile/profile.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private readonly profileService: ProfileService,
+  ) {}
   @Post('create')
   @UsePipes(new ValidationPipe())
   @ApiBody({ type: CreateUserDto })
-  async createDraft(
-    @Body() user: { email: string; name: string; password: string },
-  ): Promise<User> {
+  async createUser(@Body() user: User): Promise<User> {
     return this.usersService.createUser(user);
   }
   @Get()
@@ -39,5 +44,25 @@ export class UsersController {
   @Delete(':id')
   deleteUserById(@Param('id') id: string) {
     return this.usersService.deleteUserById(id);
+  }
+  @Post('profile/:id')
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async updateUserImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return await this.profileService.updateUserImage(id, file);
   }
 }
