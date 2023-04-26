@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { PetsService } from '../pets/pets.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    @Inject(forwardRef(() => PetsService)) private petsService: PetsService,
+  ) {}
   async createUser(data: User): Promise<User> {
     const hashPwd = await bcrypt.hash(data.password, 10);
     const profileData = { image: null };
@@ -37,6 +41,15 @@ export class UsersService {
   async deleteUserById(id: string) {
     return this.prismaService.user.delete({
       where: { id: id },
+    });
+  }
+  async getUserById(id: string) {
+    return this.prismaService.user.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+      },
     });
   }
 }

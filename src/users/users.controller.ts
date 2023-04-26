@@ -2,10 +2,15 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
+  HttpStatus,
+  Inject,
   Param,
   Post,
   Put,
+  Req,
+  Res,
   UploadedFile,
   UseInterceptors,
   UsePipes,
@@ -18,12 +23,16 @@ import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { User } from '@prisma/client';
 import { ProfileService } from './profile/profile.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PetDto } from '../pets/dto/pet.dto';
+import { PetsService } from '../pets/pets.service';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private usersService: UsersService,
     private readonly profileService: ProfileService,
+    @Inject(forwardRef(() => PetsService))
+    private readonly petsService: PetsService,
   ) {}
   @Post('create')
   @UsePipes(new ValidationPipe())
@@ -64,5 +73,22 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return await this.profileService.updateUserImage(id, file);
+  }
+  @Post('/animals/:userId')
+  async addNewPet(
+    @Req() req: any,
+    @Res() res: any,
+    @Body() body: PetDto,
+    @Param('userId') userId: string,
+  ) {
+    const user = await this.usersService.getUserById(userId);
+    if (!user) {
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: `${userId} not found` });
+    }
+    return res
+      .status(HttpStatus.OK)
+      .json(await this.petsService.createPets(body, userId));
   }
 }
