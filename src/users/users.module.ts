@@ -10,6 +10,6 @@ import { PetsService } from '../pets/pets.service';
   imports: [ProfileModule, forwardRef(() => PetsModule)],
   controllers: [UsersController],
   providers: [UsersService, PrismaService, PetsService],
-  exports: [UsersModule],
+  exports: [UsersService],
 })
 export class UsersModule {}

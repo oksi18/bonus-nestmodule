@@ -12,19 +12,17 @@ import {
   Req,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/CreateUser.dto';
 import { ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
-import { User } from '@prisma/client';
 import { ProfileService } from './profile/profile.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PetDto } from '../pets/dto/pet.dto';
 import { PetsService } from '../pets/pets.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UsersController {
@@ -34,27 +32,25 @@ export class UsersController {
     @Inject(forwardRef(() => PetsService))
     private readonly petsService: PetsService,
   ) {}
-  @Post('create')
-  @UsePipes(new ValidationPipe())
-  @ApiBody({ type: CreateUserDto })
-  async createUser(@Body() user: User): Promise<User> {
-    return this.usersService.createUser(user);
-  }
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   getAllUsers() {
     return this.usersService.getAllUsers();
   }
   @Put('update/:id')
+  @UseGuards(AuthGuard('jwt'))
   @ApiParam({ name: 'id', type: 'string', description: 'User ID' })
   @ApiBody({ type: UpdateUserDto })
   updateUser(@Param('id') id: string, @Body() data: any) {
     return this.usersService.updateUser(id, data);
   }
   @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
   deleteUserById(@Param('id') id: string) {
     return this.usersService.deleteUserById(id);
   }
   @Post('profile/:id')
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({

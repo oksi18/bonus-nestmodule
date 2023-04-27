@@ -7,6 +7,7 @@ import { diskStorage } from 'multer';
 import { PetsService } from './pets/pets.service';
 import { PetsController } from './pets/pets.controller';
 import { PetsModule } from './pets/pets.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PetsModule } from './pets/pets.module';
       }),
     }),
     PetsModule,
+    AuthModule,
   ],
   controllers: [PetsController],
   providers: [PetsService],

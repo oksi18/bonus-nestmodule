@@ -3,3 +3,7 @@ export type UpdateUserParams = {
   email: string;
   password: string;
 };
+export type AuthUserParams = {
+  username: string;
+  password: string;
+};

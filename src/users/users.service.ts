@@ -52,4 +52,9 @@ export class UsersService {
       },
     });
   }
+  async getUserByName(name: string) {
+    return this.prismaService.user.findFirst({
+      where: { name: name },
+    });
+  }
 }
